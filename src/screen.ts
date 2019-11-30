@@ -1,5 +1,7 @@
-import FontText from './Render/fonttext';
-import FontStyle from './Render/fontstyle';
+import FontText from './render/fonttext';
+import FontStyle from './render/fontstyle';
+import Vector2 from './vector2';
+import Sprite from './image';
 
 export class GameScreen {
   canvasId: string;
@@ -20,7 +22,13 @@ export class GameScreen {
 
   buildCanvasContext() {
     this.canvas = <HTMLCanvasElement>document.getElementById(this.canvasId);
+    this.canvas.setAttribute("tabindex", "0");
+    this.canvas.focus();
     this.context = <CanvasRenderingContext2D>this.canvas.getContext("2d");
+  }
+
+  addEventListener(eventString: string, callback: (event: Event)=>any) {
+    this.canvas.addEventListener(eventString, callback);
   }
 
   calculateFps(time: number): number {
@@ -40,6 +48,10 @@ export class GameScreen {
 
   clear() {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+
+  drawSprite(sprite: Sprite, vector2d: Vector2) {
+    this.context.drawImage(sprite.getSource(), vector2d.x, vector2d.y);
   }
 
   drawText(text: FontText) {

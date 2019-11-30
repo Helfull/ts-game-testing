@@ -21,10 +21,16 @@ module.exports = {
     }),
   ],
   resolve: {
-    extensions: ['.tsx', '.ts', '.js'],
+    extensions: ['.tsx', '.ts', '.js', '.png'],
   },
   module: {
     rules: [
+      {
+        test: /\.(png|svg|jpg|gif)$/,
+        use: [
+          'file-loader',
+        ],
+      },
       {
         test: /\.tsx?$/,
         use: 'ts-loader',
@@ -35,12 +41,6 @@ module.exports = {
         use: [
           'style-loader',
           'css-loader',
-        ],
-      },
-      {
-        test: /\.(png|svg|jpg|gif)$/,
-        use: [
-          'file-loader',
         ],
       },
       {
