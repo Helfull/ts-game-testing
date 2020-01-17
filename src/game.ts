@@ -8,12 +8,18 @@ import Player from './player';
 import Water from './assets/water.png';
 import Camera from './camera';
 import Rock from './assets/tile_66.png';
+import World from './world';
+import Tile from './tile';
+import TileType from './tileType';
+import FontText from './render/fonttext';
+import FontStyle from './render/fontstyle';
 
 export class Game {
   screen: GameScreen;
   controller: Controller;
   eventDispatcher: EventDispatcher;
   player: Player;
+  world: World;
 
   running: boolean = true;
   lastLoop: number;
@@ -32,6 +38,8 @@ export class Game {
     this.player = new Player(this.eventDispatcher);
     this.controller = new Controller(this.eventDispatcher);
     this.camera = new Camera(this.player.position);
+
+    this.world = new World();
   }
 
   setup() {
@@ -40,7 +48,15 @@ export class Game {
 
     this.debugElement = document.getElementById('debugElement');
 
-    this.camera.attachEntity(this.player, new Vector2(0, -10));
+    const map: Tile[][] = [];
+    for(let x = 0; x < 200; x++) {
+      map[x] = [];
+      for (let y = 0; y < 200; y++) {
+        map[x][y] = new Tile(TileType.WATER);
+      }
+    }
+
+    this.world.setMap(map);
   }
 
   loop() {
@@ -52,24 +68,40 @@ export class Game {
 
   update(progress: number) {
     this.player.update(progress);
-    this.camera.update(progress);
+
+    this.camera.position = this.player.position.add(this.screen.canvasSize.divide(2));
   }
 
   render(time: number) {
 
     this.update(time - this.lastLoop);
 
-    this.screen.fill(this.waterSprite);
+    this.screen.clear();
 
     this.screen.save(this.camera);
-    this.screen.drawSprite(this.rockSprite, new Vector2(-100, -1000));
-    this.player.render(time, this.screen);
+    this.world.render(this.screen);
 
     this.debugElement.textContent = JSON.stringify({
       player: {...this.player, anchorPos: this.player.sprite.getAnchorPosition()},
-      camera: this.camera,
+      camera: this.camera
     }, null, 2);
+
+    this.player.render(time, this.screen);
     this.screen.restore();
+    const debugTextData: string[]= [
+      "ScreenCenter: " + this.screen.canvasSize.divide(2).toString(),
+      "Camera: " + this.camera.position.toString(),
+      "Player: " + this.player.position.toString()
+    ];
+    for (let i = 0; i < debugTextData.length; i++) {
+      this.screen.drawText(
+        new FontText(
+          debugTextData[i],
+          new FontStyle("32px", "Fira Code")
+        ),
+        new Vector2(0, 60).add(new Vector2(0, i * 30))
+    );
+    }
     this.screen.drawFps(time);
     this.screen.drawDebug();
     this.loop();

@@ -3,6 +3,7 @@ import FontStyle from './render/fontstyle';
 import Vector2 from './vector2';
 import Sprite from './image';
 import Camera from './camera';
+import { realpath } from 'fs';
 
 export class GameScreen {
   canvasId: string;
@@ -13,6 +14,8 @@ export class GameScreen {
   defaultFont: FontStyle;
   camera: Camera;
   canvasSize: Vector2;
+
+  private margin: number = 64;
 
   constructor(
     canvasId: string,
@@ -73,7 +76,8 @@ export class GameScreen {
       new FontText(
         this.calculateFps(time) + " FPS",
         new FontStyle("32px", "Fira Code")
-      )
+      ),
+      new Vector2(0, 30)
     );
   }
 
@@ -85,7 +89,7 @@ export class GameScreen {
     this.context.save();
 
     if(camera !== undefined) {
-      this.translate(camera.position.add(this.canvasSize.divide(2)));
+      this.translate(camera.position);
       this.camera = camera;
     }
   }
@@ -109,15 +113,23 @@ export class GameScreen {
 
   drawSprite(sprite: Sprite, position: Vector2) {
     const realPosition: Vector2 = position.subtract(sprite.getAnchorPosition());
+
+    if (this.camera && ! realPosition.isBetween(
+      this.camera.position.subtract(this.margin),
+      this.camera.position.add(this.canvasSize).add(this.margin)
+    )){
+      return;
+    }
+
     this.context.drawImage(sprite.getSource(), realPosition.x, realPosition.y);
   }
 
-  drawText(text: FontText) {
+  drawText(text: FontText, position: Vector2) {
     if (text.getStyle()) {
       this.context.font = text.getStyle();
     }
 
-    this.context.fillText(text.getText(), 0, 30);
+    this.context.fillText(text.getText(), position.x, position.y);
     this.context.font = this.defaultFont.toString();
   }
 
