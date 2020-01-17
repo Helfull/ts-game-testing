@@ -1,25 +1,25 @@
-import collect, { Collection } from 'collect.js';
 import Dispatchable from './events/dispatchable';
+import DispatchFunction from './events/dispatchFunction';
 
 export default class EventDispatcher {
 
-  events: Collection<Dispatchable>;
+  events: { [eventName: string]: Dispatchable; };
 
   constructor() {
-    this.events = collect();
+    this.events = {};
   }
 
-  emit(eventName: string):void {
-    if (!this.events.has(eventName)) return;
+  emit(eventName: string, args: Array<any> = []):void {
+    if (this.events[eventName] == undefined) return;
 
-    this.events.get(eventName).dispatch();
+    this.events[eventName].dispatch(args);
   }
 
-  listen(eventName: string, callback: VoidFunction): void {
-    if (!this.events.has(eventName)) {
-      this.events.put(eventName, new Dispatchable(eventName));
+  listen(eventName: string, callback: DispatchFunction): void {
+    if (this.events[eventName] == undefined) {
+      this.events[eventName] = new Dispatchable(eventName);
     }
 
-    this.events.get(eventName).listen(callback);
+    this.events[eventName].listen(callback);
   }
 }

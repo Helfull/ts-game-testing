@@ -1,21 +1,21 @@
-import { Collection, collect } from "collect.js";
+import DispatchFunction from "./dispatchFunction";
 
 export default class Dispatchable {
 
   name: string;
 
-  callbacks: Collection<VoidFunction>;
+  callbacks: Array<DispatchFunction>;
 
   constructor(name: string) {
     this.name = name;
-    this.callbacks = collect([]);
+    this.callbacks = [];
   }
 
-  dispatch() {
-    this.callbacks.each((callback: VoidFunction) => callback());
+  dispatch(args: Array<any>) {
+    this.callbacks.forEach((callback: DispatchFunction) => callback(args));
   }
 
-  listen(callback: VoidFunction) {
+  listen(callback: DispatchFunction) {
     this.callbacks.push(callback);
   }
 

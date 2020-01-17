@@ -1,33 +1,55 @@
 import EventDispatcher from "./eventdispatcher";
 import MoveEvent from "./events/moveevent";
+import Entity from "./entity";
+import Vector2 from "./vector2";
+import Sprite from "./image";
+import ShipImage from "./assets/ship.png";
+import { GameScreen } from "./screen";
+import Anchor from "./anchor";
 
-export default class Player {
+export default class Player extends Entity {
 
-  eventDispatcher: EventDispatcher
+  private moveEvents: { [event: string]: boolean };
+
+  speed: number = 0.5;
+
+  sprite: Sprite;
 
   constructor(eventDispatcher: EventDispatcher) {
-    this.eventDispatcher = eventDispatcher;
+    super();
+    this.moveEvents = {};
+    this.sprite = new Sprite(ShipImage);
+    this.sprite.flip(new Vector2(1, -1));
+    this.sprite.anchor = Anchor.center();
 
-    this.eventDispatcher.listen(MoveEvent.UP, () => this.moveUp());
-    this.eventDispatcher.listen(MoveEvent.UP, () => this.moveDown());
-    this.eventDispatcher.listen(MoveEvent.UP, () => this.moveLeft());
-    this.eventDispatcher.listen(MoveEvent.UP, () => this.moveRight());
+    eventDispatcher.listen(MoveEvent.UP, (args: Array<any>) => this.moveEvent(args[0]));
+    eventDispatcher.listen(MoveEvent.DOWN, (args: Array<any>) => this.moveEvent(args[0]));
+    eventDispatcher.listen(MoveEvent.LEFT, (args: Array<any>) => this.moveEvent(args[0]));
+    eventDispatcher.listen(MoveEvent.RIGHT, (args: Array<any>) => this.moveEvent(args[0]));
   }
 
-  moveUp(): void {
-    console.log('MOVE UP');
+  private moveEvent(event: MoveEvent): void {
+    this.moveEvents[event.name] = event.active;
   }
 
-  moveDown(): void {
-    console.log('MOVE UP');
+  update(progress: number): void {
+    this.updateVelocity(progress);
+    super.update(progress);
   }
 
-  moveLeft(): void {
-    console.log('MOVE UP');
+  render(time: number, screen: GameScreen): void {
+    screen.drawSprite(this.sprite, this.position);
   }
 
-  moveRight(): void {
-    console.log('MOVE UP');
-  }
+  private updateVelocity(progress: number): void
+  {
+    let velocity: Vector2 = new Vector2(0, 0);
 
+    if (this.moveEvents[MoveEvent.UP]) velocity.y -= this.speed;
+    if (this.moveEvents[MoveEvent.DOWN]) velocity.y += this.speed;
+    if (this.moveEvents[MoveEvent.RIGHT]) velocity.x += this.speed;
+    if (this.moveEvents[MoveEvent.LEFT]) velocity.x -= this.speed;
+
+    this.velocity = velocity;
+  }
 }
